@@ -1,5 +1,6 @@
 # MindMeld
-MindMeld is a derivative of BrainF**k that uses two data pointers, rather than just one.
+MindMeld is a derivative of BrainF**k that uses two data pointers, rather than just one.  
+Download the lastest release [here!](https://github.com/quietsamurai98/MindMeld/releases)
 
 ## How does it work?
 Each MindMeld command has two characters, the instruction and the pointer.  
