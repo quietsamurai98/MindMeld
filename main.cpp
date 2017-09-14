@@ -38,7 +38,7 @@
 
 //Pre-processing functions
 char* source_read(const char* filename);
-char* source_sanitize(char *source);
+char* source_sanitize(char *source, bool is_hex);
 
 //Execution function
 void execute(char *instructions);
@@ -55,7 +55,8 @@ int main()
         getch();
         return 1;
     }
-    char *instructions=source_sanitize(raw_source);
+    bool is_hex = path.substr(path.rfind(".") + 1)=="hmm";
+    char *instructions=source_sanitize(raw_source, is_hex);
     printf("%s\n", instructions);
     execute(instructions);
     std::cout << std::endl << "Press any key to continue..." << std::endl;
@@ -78,7 +79,6 @@ char* source_read(const char* filename)
         char *contents = new char[length+1];
         source.read(contents, length);
         contents[strlen(contents)]='\0';
-        source_sanitize(contents);
         return contents;
     } else {
         return nullptr;
@@ -87,8 +87,28 @@ char* source_read(const char* filename)
 
 //Remove invalid characters from the raw source
 //TODO: Add in removing comments marked with /*example comment*/, so you can have comments with MM command characters.
-char* source_sanitize(char *source)
+char* source_sanitize(char *source, bool is_hex)
 {
+    //replace hex commands with MM commands
+    if(is_hex){
+        std::string source_str(source);
+        std::string hex[16] = {"0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"};                    //Hex codes
+        std::string mmc[16] = {">A",">B","<A","<B","+A","+B","-A","-B",".A",".B",",A",",B","[A","[B","]A","]B"};    //MindMeld commands
+        for(int i=0; i<16;i++){
+            std::string::size_type n = 0;
+            std::string f = hex[i]; //find
+            std::string r = mmc[i]; //replace
+            while ( ( n = source_str.find( f, n ) ) != std::string::npos )
+            {
+                source_str.replace( n, f.size(), r );
+                n += r.size();
+            }
+        }
+        source_str+="\0";
+        delete source;
+        source = new char[strlen(source_str.c_str())+1];
+        strcpy(source, source_str.c_str());
+    }
     long long int valid_count = 0; //Interpreter can hypothetically handle up to 16 exbibytes worth of executable code.
 
     //Count the number of valid characters in the source file
